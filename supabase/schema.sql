@@ -6,27 +6,30 @@
 -- Categorías
 create table if not exists categorias (
   id     bigint primary key generated always as identity,
-  nombre text not null,
-  slug   text not null unique,
-  orden  int  not null default 0
+  nombre text   not null,
+  slug   text   not null unique,
+  orden  int    not null default 0
 );
 
 -- Productos
 create table if not exists productos (
-  id          bigint primary key generated always as identity,
-  nombre      text    not null,
-  descripcion text,
-  precio      numeric(10,2),
-  categoria   text    references categorias(slug) on update cascade on delete set null,
-  imagen_url  text,
-  disponible  boolean not null default true,
-  created_at  timestamptz not null default now()
+  id           bigint   primary key generated always as identity,
+  nombre       text     not null,
+  descripcion  text,
+  precio       numeric(10,2),
+  precio_oferta numeric(10,2),
+  categoria_id bigint   references categorias(id) on delete set null,
+  imagen_url   text,
+  disponible   boolean  not null default true,
+  orden        int      not null default 0,
+  created_at   timestamptz not null default now()
 );
 
--- RLS: catálogo público (solo lectura)
-alter table productos   enable row level security;
-alter table categorias  enable row level security;
+-- RLS
+alter table productos  enable row level security;
+alter table categorias enable row level security;
 
+-- Catálogo público (solo lectura)
 create policy "Catálogo público"
   on productos for select using (disponible = true);
 
@@ -58,7 +61,7 @@ create policy "Admin borra imágenes"
   using (bucket_id = 'imagenes' and auth.role() = 'authenticated');
 
 -- =============================================
--- CATEGORÍAS DE EJEMPLO (borrar o ajustar)
+-- CATEGORÍAS DE EJEMPLO (ajustar o borrar)
 -- =============================================
 insert into categorias (nombre, slug, orden) values
   ('Lácteos',     'lacteos',     1),

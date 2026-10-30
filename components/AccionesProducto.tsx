@@ -8,11 +8,17 @@ export default function AccionesProducto({ id }: { id: number }) {
 
   async function eliminar() {
     if (!confirm("¿Eliminar este producto?")) return;
-    await createClient().from("productos").delete().eq("id", id);
+    const sb = createClient();
+    await sb.from("productos").delete().eq("id", id);
     router.refresh();
   }
 
   return (
-    <button onClick={eliminar} className="btn-danger text-xs">Eliminar</button>
+    <button
+      onClick={eliminar}
+      className="text-xs px-3 py-1.5 rounded-lg text-red-600 border border-red-100 hover:bg-red-50 transition-colors"
+    >
+      Eliminar
+    </button>
   );
 }

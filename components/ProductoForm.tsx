@@ -2,141 +2,172 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
 
 type Categoria = { id: number; nombre: string; slug: string };
 
-type Producto = {
+type Inicial = {
   id?: number;
-  nombre: string;
-  descripcion: string;
-  precio: string;
-  categoria: string;
-  imagen_url: string;
-  disponible: boolean;
+  nombre?: string;
+  descripcion?: string | null;
+  precio?: number | null;
+  precio_oferta?: number | null;
+  categoria_id?: number | null;
+  imagen_url?: string | null;
+  disponible?: boolean;
+  orden?: number | null;
 };
 
-type Props = {
+export default function ProductoForm({
+  categorias,
+  inicial,
+}: {
   categorias: Categoria[];
-  inicial?: Partial<Producto> & { id?: number };
-};
-
-export default function ProductoForm({ categorias, inicial }: Props) {
+  inicial?: Inicial;
+}) {
   const router = useRouter();
-  const [form, setForm] = useState<Producto>({
-    nombre:      inicial?.nombre ?? "",
-    descripcion: inicial?.descripcion ?? "",
-    precio:      inicial?.precio != null ? String(inicial.precio) : "",
-    categoria:   inicial?.categoria ?? "",
-    imagen_url:  inicial?.imagen_url ?? "",
-    disponible:  inicial?.disponible ?? true,
-  });
+  const sb = createClient();
+
+  const [nombre, setNombre] = useState(inicial?.nombre ?? "");
+  const [descripcion, setDescripcion] = useState(inicial?.descripcion ?? "");
+  const [precio, setPrecio] = useState(inicial?.precio?.toString() ?? "");
+  const [precioOferta, setPrecioOferta] = useState(inicial?.precio_oferta?.toString() ?? "");
+  const [categoriaId, setCategoriaId] = useState(inicial?.categoria_id?.toString() ?? "");
+  const [imagenUrl, setImagenUrl] = useState(inicial?.imagen_url ?? "");
+  const [disponible, setDisponible] = useState(inicial?.disponible ?? true);
+  const [orden, setOrden] = useState(inicial?.orden?.toString() ?? "0");
   const [subiendo, setSubiendo] = useState(false);
   const [guardando, setGuardando] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
-  function set(k: keyof Producto, v: string | boolean) {
-    setForm((f) => ({ ...f, [k]: v }));
-  }
-
-  async function subirImagen(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  async function subirImagen(file: File) {
     setSubiendo(true);
-    const sb = createClient();
     const ext = file.name.split(".").pop();
-    const path = `productos/${Date.now()}.${ext}`;
-    const { error } = await sb.storage.from("imagenes").upload(path, file, { upsert: true });
-    if (error) { setError(error.message); setSubiendo(false); return; }
-    const { data } = sb.storage.from("imagenes").getPublicUrl(path);
-    set("imagen_url", data.publicUrl);
+    const path = `${Date.now()}.${ext}`;
+    const { error } = await sb.storage
+      .from("imagenes")
+      .upload(path, file, { upsert: true });
     setSubiendo(false);
+    if (error) { setError("Error al subir imagen: " + error.message); return; }
+    const { data } = sb.storage.from("imagenes").getPublicUrl(path);
+    setImagenUrl(data.publicUrl);
   }
 
-  async function guardar(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!nombre.trim()) { setError("El nombre es obligatorio"); return; }
     setGuardando(true);
-    setError(null);
-    const sb = createClient();
-    const payload = {
-      nombre:      form.nombre,
-      descripcion: form.descripcion || null,
-      precio:      form.precio ? Number(form.precio) : null,
-      categoria:   form.categoria || null,
-      imagen_url:  form.imagen_url || null,
-      disponible:  form.disponible,
+    setError("");
+
+    const datos = {
+      nombre: nombre.trim(),
+      descripcion: descripcion.trim() || null,
+      precio: precio ? Number(precio) : null,
+      precio_oferta: precioOferta ? Number(precioOferta) : null,
+      categoria_id: categoriaId ? Number(categoriaId) : null,
+      imagen_url: imagenUrl || null,
+      disponible,
+      orden: Number(orden) || 0,
     };
-    const { error } = inicial?.id
-      ? await sb.from("productos").update(payload).eq("id", inicial.id)
-      : await sb.from("productos").insert(payload);
+
+    let err;
+    if (inicial?.id) {
+      ({ error: err } = await sb.from("productos").update(datos).eq("id", inicial.id));
+    } else {
+      ({ error: err } = await sb.from("productos").insert(datos));
+    }
+
     setGuardando(false);
-    if (error) { setError(error.message); return; }
+    if (err) { setError(err.message); return; }
     router.push("/admin");
     router.refresh();
   }
 
+  const inp = "w-full px-3 py-2 rounded-lg border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white";
+
   return (
-    <form onSubmit={guardar} className="space-y-5">
-      {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
-
-      <div className="grid sm:grid-cols-2 gap-5">
-        <div>
-          <label className="label">Nombre *</label>
-          <input className="input" required value={form.nombre} onChange={(e) => set("nombre", e.target.value)} placeholder="Ej: Miel de abeja" />
-        </div>
-        <div>
-          <label className="label">Precio (opcional)</label>
-          <input className="input" type="number" min="0" step="0.01" value={form.precio} onChange={(e) => set("precio", e.target.value)} placeholder="Ej: 1500" />
-        </div>
-      </div>
-
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
+      {/* Imagen */}
       <div>
-        <label className="label">Descripción (opcional)</label>
-        <textarea className="input resize-none" rows={3} value={form.descripcion} onChange={(e) => set("descripcion", e.target.value)} placeholder="Breve descripción del producto…" />
-      </div>
-
-      <div>
-        <label className="label">Categoría</label>
-        {categorias.length > 0 ? (
-          <select className="input" value={form.categoria} onChange={(e) => set("categoria", e.target.value)}>
-            <option value="">Sin categoría</option>
-            {categorias.map((c) => (
-              <option key={c.id} value={c.slug}>{c.nombre}</option>
-            ))}
-          </select>
-        ) : (
-          <input className="input" value={form.categoria} onChange={(e) => set("categoria", e.target.value)} placeholder="Ej: frutas, lácteos, panificados…" />
-        )}
-      </div>
-
-      <div>
-        <label className="label">Imagen</label>
-        <input type="file" accept="image/*" onChange={subirImagen} className="text-sm text-stone-600" />
-        {subiendo && <p className="text-xs text-stone-400 mt-1">Subiendo imagen…</p>}
-        {form.imagen_url && (
-          <div className="mt-2 relative w-24 h-24 rounded-lg overflow-hidden border border-stone-200">
-            <Image src={form.imagen_url} alt="preview" fill className="object-cover" />
+        <label className="block text-sm font-medium text-stone-700 mb-1">Imagen</label>
+        {imagenUrl && (
+          <div className="relative w-full aspect-video rounded-xl overflow-hidden mb-2 bg-stone-100">
+            <Image src={imagenUrl} alt="preview" fill className="object-cover" />
+            <button
+              type="button"
+              onClick={() => setImagenUrl("")}
+              className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 text-white text-xs flex items-center justify-center"
+            >
+              ×
+            </button>
           </div>
         )}
+        <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-stone-300 cursor-pointer text-sm text-stone-500 hover:bg-stone-50 transition-colors">
+          📷 {subiendo ? "Subiendo..." : "Subir imagen"}
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            disabled={subiendo}
+            onChange={e => { const f = e.target.files?.[0]; if (f) subirImagen(f); }}
+          />
+        </label>
       </div>
 
-      <label className="flex items-center gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={form.disponible}
-          onChange={(e) => set("disponible", e.target.checked)}
-          className="w-4 h-4 accent-brand-500"
-        />
+      <div>
+        <label className="block text-sm font-medium text-stone-700 mb-1">Nombre *</label>
+        <input className={inp} value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre del producto" />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700 mb-1">Descripción</label>
+        <textarea className={inp} rows={3} value={descripcion} onChange={e => setDescripcion(e.target.value)} placeholder="Descripción opcional..." style={{ resize: "vertical" }} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-1">Precio</label>
+          <input type="number" min="0" step="0.01" className={inp} value={precio} onChange={e => setPrecio(e.target.value)} placeholder="0.00" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-1">Precio oferta</label>
+          <input type="number" min="0" step="0.01" className={inp} value={precioOferta} onChange={e => setPrecioOferta(e.target.value)} placeholder="Vacío = sin oferta" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-1">Categoría</label>
+          <select className={inp} value={categoriaId} onChange={e => setCategoriaId(e.target.value)}>
+            <option value="">Sin categoría</option>
+            {categorias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-1">Orden</label>
+          <input type="number" className={inp} value={orden} onChange={e => setOrden(e.target.value)} />
+        </div>
+      </div>
+
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" checked={disponible} onChange={e => setDisponible(e.target.checked)} className="rounded" />
         <span className="text-sm text-stone-700">Visible en el catálogo</span>
       </label>
 
-      <div className="flex gap-3 pt-2">
-        <button type="submit" className="btn-primary" disabled={guardando || subiendo}>
-          {guardando ? "Guardando…" : inicial?.id ? "Guardar cambios" : "Crear producto"}
-        </button>
-        <button type="button" className="btn-ghost" onClick={() => router.back()}>
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <div className="flex gap-2 pt-2">
+        <button
+          type="button"
+          onClick={() => router.push("/admin")}
+          className="flex-1 py-2.5 rounded-lg border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 transition-colors"
+        >
           Cancelar
+        </button>
+        <button
+          type="submit"
+          disabled={guardando || subiendo}
+          className="flex-1 py-2.5 rounded-lg bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 disabled:opacity-50 transition-colors"
+        >
+          {guardando ? "Guardando..." : inicial?.id ? "Guardar cambios" : "Crear producto"}
         </button>
       </div>
     </form>
