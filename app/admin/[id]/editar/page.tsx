@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import ProductoForm from "@/components/ProductoForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function EditarProducto({ params }: { params: { id: string } }) {
   const sb = createClient();
   const [{ data: producto }, { data: categorias }] = await Promise.all([

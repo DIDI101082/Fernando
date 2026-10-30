@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import AccionesProducto from "@/components/AccionesProducto";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   const sb = createClient();
   const { data: productos } = await sb
