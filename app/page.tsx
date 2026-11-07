@@ -3,18 +3,23 @@ import { Product } from "@/lib/types";
 import ShopClient from "@/components/ShopClient";
 
 async function getProducts(): Promise<Product[]> {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("active", true)
-    .order("category")
-    .order("name");
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("active", true)
+      .order("category")
+      .order("name");
 
-  if (error) {
-    console.error("Error al obtener productos:", error.message);
+    if (error) {
+      console.error("Error al obtener productos:", error.message);
+      return [];
+    }
+    return (data ?? []) as Product[];
+  } catch (e) {
+    console.error("Fallo al conectar con Supabase:", e);
     return [];
   }
-  return data as Product[];
 }
 
 export default async function HomePage() {
