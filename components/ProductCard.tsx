@@ -3,6 +3,7 @@
 import { Product } from "@/lib/types";
 import { useCart } from "@/context/CartContext";
 import { fmt } from "@/lib/format";
+import Image from "next/image";
 
 interface Props {
   product: Product;
@@ -21,9 +22,21 @@ export default function ProductCard({ product, onAdd }: Props) {
 
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col">
-      {/* Imagen / emoji */}
-      <div className="bg-green-50 flex items-center justify-center py-5 text-5xl relative">
-        {product.emoji}
+      {/* Imagen del producto */}
+      <div className="relative bg-gray-50 aspect-square overflow-hidden">
+        {product.image_url ? (
+          <Image
+            src={product.image_url}
+            alt={product.name}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-5xl">
+            {product.emoji}
+          </div>
+        )}
         {product.badge && (
           <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
             {product.badge}
@@ -47,7 +60,9 @@ export default function ProductCard({ product, onAdd }: Props) {
 
         <p className="text-primary font-bold text-lg mt-auto mb-2">
           {fmt(product.price)}{" "}
-          <span className="text-gray-400 text-xs font-normal">c/u</span>
+          {product.price != null && (
+            <span className="text-gray-400 text-xs font-normal">c/u</span>
+          )}
         </p>
 
         <button

@@ -10,6 +10,7 @@ create table if not exists public.products (
   brand       text         not null default '',
   category    text         not null,
   price       numeric(10,2) not null,
+  image_url   text,                          -- ruta en /public/images/ ej: /images/nobles-coratina.jpg
   emoji       text         not null default '📦',
   badge       text,                          -- "OFERTA", "NUEVO", "PREMIUM", etc.
   stock       integer,                       -- null = sin control de stock

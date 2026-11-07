@@ -60,7 +60,7 @@ export default function ShopClient({ products }: Props) {
             ── Distribuidora Mayorista ──
           </p>
           <p className="text-white/80 text-sm mt-1">
-            Yerba, aceites, azúcar, arroz y mucho más. Envíos a domicilio.
+            Aceites de oliva virgen extra, yerba mate orgánica e infusiones artesanales. Envíos a domicilio.
           </p>
           <a
             href="https://instagram.com/raicesregionales.mayorista"
