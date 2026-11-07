@@ -114,7 +114,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [state.items, hydrated]);
 
   const totalQty = state.items.reduce((s, i) => s + i.qty, 0);
-  const totalPrice = state.items.reduce((s, i) => s + i.price * i.qty, 0);
+  const totalPrice = state.items.reduce((s, i) => s + (i.price ?? 0) * i.qty, 0);
 
   const value: CartContextValue = {
     items: state.items,
