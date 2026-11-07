@@ -36,7 +36,7 @@ export default function CartDrawer() {
 
       // 2. Abrir WhatsApp con el pedido
       const lines = items.map(
-        (i) => `• ${i.name} (${i.brand}) x${i.qty} = ${fmt(i.price * i.qty)}`
+        (i) => `• ${i.name} (${i.brand}) x${i.qty} = ${i.price != null ? fmt(i.price * i.qty) : "consultar precio"}`
       );
       const msg = [
         `Hola! Quiero hacer el siguiente pedido${orderId}:`,
@@ -115,7 +115,7 @@ export default function CartDrawer() {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="font-bold text-primary text-sm">{fmt(item.price * item.qty)}</span>
+                    <span className="font-bold text-primary text-sm">{item.price != null ? fmt(item.price * item.qty) : "—"}</span>
                     <button
                       onClick={() => remove(item.id)}
                       className="text-red-400 hover:text-red-600 text-xs"
