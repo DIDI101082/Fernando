@@ -1,0 +1,78 @@
+"use client";
+
+import { Product } from "@/lib/types";
+import { useCart } from "@/context/CartContext";
+import { fmt } from "@/lib/format";
+
+interface Props {
+  product: Product;
+  onAdd?: () => void;
+}
+
+export default function ProductCard({ product, onAdd }: Props) {
+  const { add, isInCart, openCart } = useCart();
+
+  const handleAdd = () => {
+    add(product);
+    onAdd?.();
+  };
+
+  const inCart = isInCart(product.id);
+
+  return (
+    <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col">
+      {/* Imagen / emoji */}
+      <div className="bg-green-50 flex items-center justify-center py-5 text-5xl relative">
+        {product.emoji}
+        {product.badge && (
+          <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+            {product.badge}
+          </span>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="p-3 flex flex-col flex-1">
+        <p className="font-semibold text-sm leading-snug">{product.name}</p>
+        <p className="text-xs text-gray-400 mt-0.5 mb-2">{product.brand}</p>
+
+        {product.stock !== null && product.stock <= 5 && product.stock > 0 && (
+          <p className="text-xs text-orange-500 font-medium mb-1">
+            ⚠ Solo quedan {product.stock} unidades
+          </p>
+        )}
+        {product.stock === 0 && (
+          <p className="text-xs text-red-500 font-medium mb-1">Sin stock</p>
+        )}
+
+        <p className="text-primary font-bold text-lg mt-auto mb-2">
+          {fmt(product.price)}{" "}
+          <span className="text-gray-400 text-xs font-normal">c/u</span>
+        </p>
+
+        <button
+          onClick={handleAdd}
+          disabled={product.stock === 0}
+          className={`w-full py-2 rounded-lg text-sm font-semibold transition-colors ${
+            product.stock === 0
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : inCart
+              ? "bg-green-600 text-white hover:bg-green-700"
+              : "bg-primary text-white hover:bg-primary-dark"
+          }`}
+        >
+          {product.stock === 0 ? "Sin stock" : inCart ? "✓ Agregado" : "+ Agregar"}
+        </button>
+
+        {inCart && (
+          <button
+            onClick={openCart}
+            className="w-full mt-1.5 py-1.5 rounded-lg text-xs font-medium text-primary border border-primary hover:bg-green-50 transition-colors"
+          >
+            Ver carrito →
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
