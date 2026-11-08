@@ -65,6 +65,13 @@ export default function ProductCard({ product, onAdd }: Props) {
           )}
         </p>
 
+        {(product.category === 'yerba' || product.category === 'infusiones') && (
+          <p className="text-[10px] text-gray-400 mb-2 leading-tight">
+            Compra mínima 20 unidades.<br/>
+            (10 unidades de cada tipo)
+          </p>
+        )}
+
         <button
           onClick={handleAdd}
           disabled={product.stock === 0}
