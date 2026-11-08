@@ -72,6 +72,17 @@ export default function ProductCard({ product, onAdd }: Props) {
           </p>
         )}
 
+        {product.category === 'aceites' && product.name.includes('500') && (
+          <p className="text-[10px] text-gray-400 mb-2 leading-tight">
+            Caja por 6 unidades.
+          </p>
+        )}
+        {product.category === 'aceites' && product.name.includes('250') && (
+          <p className="text-[10px] text-gray-400 mb-2 leading-tight">
+            Caja por 12 unidades.
+          </p>
+        )}
+
         <button
           onClick={handleAdd}
           disabled={product.stock === 0}
