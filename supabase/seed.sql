@@ -25,7 +25,15 @@ INSERT INTO products (name, brand, category, price, image_url, emoji, badge, sto
 ('Yerba Mate Orgánica 500gr',   'Atiguá',         'yerba',   NULL, '/images/atigua-yerba.jpg',    '🧉', 'Orgánica',  NULL, true),
 
 -- ============================================================
+-- YERBA MATE — León
+-- ============================================================
+('Yerba Mate con Palo 500gr',            'León',           'yerba',      NULL, '/images/leon-yerba.jpg',                   '🧉', NULL,        NULL, true),
+
+-- ============================================================
 -- INFUSIONES — Ninusha's Tea
 -- ============================================================
-('Yerba Elaborada con Palo 500gr',       'Ninusha''s Tea', 'infusiones', NULL, '/images/ninusha-palo.jpg',     '🍵', 'Artesanal', NULL, true),
-('Yerba Compuesta + Té Verde 500gr',     'Ninusha''s Tea', 'infusiones', NULL, '/images/ninusha-te-verde.jpg', '🍵', 'Artesanal', NULL, true);
+('Yerba Elaborada con Palo 500gr',       'Ninusha''s Tea', 'infusiones', NULL, '/images/ninusha-palo.jpg',                 '🍵', 'Artesanal', NULL, true),
+('Mate Cocido + Té Verde en Saquitos',   'Ninusha''s Tea', 'infusiones', NULL, '/images/ninusha-mate-cocido-te-verde.jpg', '🍵', 'Artesanal', NULL, true),
+('Té Verde Orgánico en Saquitos',        'Ninusha''s Tea', 'infusiones', NULL, '/images/ninusha-te-verde.jpg',             '🍵', 'Orgánico',  NULL, true),
+('Té Negro en Saquitos',                 'Ninusha''s Tea', 'infusiones', NULL, '/images/ninusha-te-negro.jpg',             '🍵', NULL,        NULL, true),
+('Yerba Compuesta + Té Verde 500gr',     'Ninusha''s Tea', 'infusiones', NULL, '/images/ninusha-te-verde.jpg',             '🍵', 'Artesanal', NULL, true);
